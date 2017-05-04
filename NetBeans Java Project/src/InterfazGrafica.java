@@ -1,5 +1,4 @@
 
-import com.sun.glass.events.KeyEvent;
 import java.awt.BorderLayout;
 import java.sql.SQLException;
 import java.util.logging.Level;
@@ -16,11 +15,10 @@ import java.util.logging.Logger;
  */
 public class InterfazGrafica extends javax.swing.JFrame {
 
-	/**
-	 * Creates new form InterfazGrafica
-	 */
 	private Conexion con;
-
+	private MenuMedico menuMedico;
+	private MenuGestor menuGestor;
+	
 	public InterfazGrafica() {
 		initComponents();
 	}
@@ -64,7 +62,7 @@ public class InterfazGrafica extends javax.swing.JFrame {
         panelPrincipal.setLayout(panelPrincipalLayout);
         panelPrincipalLayout.setHorizontalGroup(
             panelPrincipalLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 771, Short.MAX_VALUE)
+            .addGap(0, 502, Short.MAX_VALUE)
         );
         panelPrincipalLayout.setVerticalGroup(
             panelPrincipalLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -114,11 +112,10 @@ public class InterfazGrafica extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(iniciarSesionLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(bottonConectar, javax.swing.GroupLayout.PREFERRED_SIZE, 116, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(iniciarSesionLayout.createSequentialGroup()
-                        .addGroup(iniciarSesionLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(textFieldUser, javax.swing.GroupLayout.PREFERRED_SIZE, 116, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(passwordFieldPassword, javax.swing.GroupLayout.PREFERRED_SIZE, 116, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(34, 34, 34))))
+                    .addGroup(iniciarSesionLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                        .addComponent(textFieldUser, javax.swing.GroupLayout.PREFERRED_SIZE, 116, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(passwordFieldPassword, javax.swing.GroupLayout.PREFERRED_SIZE, 116, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGap(34, 34, 34))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, iniciarSesionLayout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(labelLogin, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -151,7 +148,7 @@ public class InterfazGrafica extends javax.swing.JFrame {
                     .addGroup(layout.createSequentialGroup()
                         .addGap(122, 122, 122)
                         .addComponent(labelTitulo, javax.swing.GroupLayout.PREFERRED_SIZE, 353, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 350, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 81, Short.MAX_VALUE)
                         .addComponent(labelUsuario, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
                         .addComponent(bottonDesconectar, javax.swing.GroupLayout.PREFERRED_SIZE, 112, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -170,7 +167,7 @@ public class InterfazGrafica extends javax.swing.JFrame {
                     .addComponent(labelTitulo, javax.swing.GroupLayout.PREFERRED_SIZE, 48, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(bottonDesconectar)
                     .addComponent(labelUsuario))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(iniciarSesion, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(panelPrincipal, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -184,9 +181,12 @@ public class InterfazGrafica extends javax.swing.JFrame {
 		// TODO add your handling code here:
     }//GEN-LAST:event_textFieldUserActionPerformed
 
+	/**
+	 * Añade al panel principal un objeto de MenuGestor
+	 */
 	private void crearMenuGestor() {
 		panelPrincipal.setSize(panelPrincipal.getWidth() + iniciarSesion.getWidth(), panelPrincipal.getHeight());
-		MenuGestor menuGestor = new MenuGestor(con);
+		menuGestor = new MenuGestor(con);
 		menuGestor.setSize(panelPrincipal.getWidth(), panelPrincipal.getHeight());
 		menuGestor.setLocation(0, 0);
 
@@ -197,12 +197,14 @@ public class InterfazGrafica extends javax.swing.JFrame {
 		panelPrincipal.repaint();
 		labelUsuario.setText(con.getUser());
 		bottonDesconectar.setEnabled(true);
-
 	}
 
+	/**
+	 * Añade al panel principal un objeto de MenuMedico
+	 */
 	private void crearMenuMedico() {
 		panelPrincipal.setSize(panelPrincipal.getWidth() + iniciarSesion.getWidth(), panelPrincipal.getHeight());
-		MenuMedico menuMedico = new MenuMedico(con);
+		menuMedico = new MenuMedico(con);
 		menuMedico.setSize(panelPrincipal.getWidth(), panelPrincipal.getHeight());
 		menuMedico.setLocation(0, 0);
 
@@ -215,16 +217,21 @@ public class InterfazGrafica extends javax.swing.JFrame {
 		bottonDesconectar.setEnabled(true);
 	}
 
+	/**
+	 * Conecta a la base de datos. Muestra el menu gestor si conectas como root
+	 * o gestor. Muestra el medico si el usuario es un medico de la tabla
+	 * medico.
+	 *
+	 * @param evt
+	 */
     private void bottonConectarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bottonConectarActionPerformed
-		// Conecta con la base de datos y muestra el menu
-		// segun el usuario que haya entrado
 		try {
 			con = new Conexion(textFieldUser.getText(), passwordFieldPassword.getPassword());
 
 			if (con.esValida() && con.getUser().equals("root")) {
 				crearMenuGestor();
 			}
-			if (con.esValida() && !(con.getUser().equals("root"))) {
+			if (con.esValida() && con.existeMedico(con.getUser())) {
 				crearMenuMedico();
 			}
 
@@ -233,9 +240,13 @@ public class InterfazGrafica extends javax.swing.JFrame {
 		}
     }//GEN-LAST:event_bottonConectarActionPerformed
 
+	/**
+	 * Cierra la conexion a la base de datos. Remueve todos los paneles y
+	 * muestra el panel de iniciar sesion
+	 *
+	 * @param evt
+	 */
     private void bottonDesconectarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bottonDesconectarActionPerformed
-		// Desconecta de la base de datos y 
-		// Muestra el panel de iniciar sesion
 		try {
 			// TODO add your handling code here:
 			con.desconectar();
@@ -257,53 +268,59 @@ public class InterfazGrafica extends javax.swing.JFrame {
 		labelUsuario.setText("Sin usuario");
 		iniciarSesion.setVisible(true);
 		textFieldUser.setText(null);
-		passwordFieldPassword.setText(null);
+		passwordFieldPassword.setText("");
+		passwordFieldPassword.resetKeyboardActions();
 		bottonDesconectar.setEnabled(false);
 
 
     }//GEN-LAST:event_bottonDesconectarActionPerformed
 
+	/**
+	 * Boton conectar a traves del enter
+	 * En construccion
+	 * @param evt 
+	 */
     private void bottonConectarKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_bottonConectarKeyPressed
-		if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
-			// Conecta con la base de datos y muestra el menu
-			// segun el usuario que haya entrado
-			try {
-				con = new Conexion(textFieldUser.getText(), passwordFieldPassword.getPassword());
+		//if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
+		// Conecta con la base de datos y muestra el menu
+		// segun el usuario que haya entrado
+		try {
+			con = new Conexion(textFieldUser.getText(), passwordFieldPassword.getPassword());
 
-				if (con.esValida() && con.getUser().equals("root")) {
-					panelPrincipal.setSize(panelPrincipal.getWidth() + iniciarSesion.getWidth(), panelPrincipal.getHeight());
-					MenuGestor menuGestor = new MenuGestor(con);
-					menuGestor.setSize(panelPrincipal.getWidth(), panelPrincipal.getHeight());
-					menuGestor.setLocation(0, 0);
+			if (con.esValida() && con.getUser().equals("root")) {
+				panelPrincipal.setSize(panelPrincipal.getWidth() + iniciarSesion.getWidth(), panelPrincipal.getHeight());
+				MenuGestor menuGestor = new MenuGestor(con);
+				menuGestor.setSize(panelPrincipal.getWidth(), panelPrincipal.getHeight());
+				menuGestor.setLocation(0, 0);
 
-					panelPrincipal.removeAll();
-					iniciarSesion.setVisible(false);
-					panelPrincipal.add(menuGestor, BorderLayout.WEST);
-					panelPrincipal.revalidate();
-					panelPrincipal.repaint();
-					labelUsuario.setText(con.getUser());
-					bottonDesconectar.setEnabled(true);
-				}
-
-				if (con.esValida() && !(con.getUser().equals("root"))) {
-					panelPrincipal.setSize(panelPrincipal.getWidth() + iniciarSesion.getWidth(), panelPrincipal.getHeight());
-					MenuMedico menuMedico = new MenuMedico(con);
-					menuMedico.setSize(panelPrincipal.getWidth(), panelPrincipal.getHeight());
-					menuMedico.setLocation(0, 0);
-
-					panelPrincipal.removeAll();
-					iniciarSesion.setVisible(false);
-					panelPrincipal.add(menuMedico, BorderLayout.WEST);
-					panelPrincipal.revalidate();
-					panelPrincipal.repaint();
-					labelUsuario.setText(con.getUser());
-					bottonDesconectar.setEnabled(true);
-				}
-
-			} catch (SQLException ex) {
-				Logger.getLogger(InterfazGrafica.class.getName()).log(Level.SEVERE, null, ex);
+				panelPrincipal.removeAll();
+				iniciarSesion.setVisible(false);
+				panelPrincipal.add(menuGestor, BorderLayout.WEST);
+				panelPrincipal.revalidate();
+				panelPrincipal.repaint();
+				labelUsuario.setText(con.getUser());
+				bottonDesconectar.setEnabled(true);
 			}
+
+			if (con.esValida() && !(con.getUser().equals("root"))) {
+				panelPrincipal.setSize(panelPrincipal.getWidth() + iniciarSesion.getWidth(), panelPrincipal.getHeight());
+				MenuMedico menuMedico = new MenuMedico(con);
+				menuMedico.setSize(panelPrincipal.getWidth(), panelPrincipal.getHeight());
+				menuMedico.setLocation(0, 0);
+
+				panelPrincipal.removeAll();
+				iniciarSesion.setVisible(false);
+				panelPrincipal.add(menuMedico, BorderLayout.WEST);
+				panelPrincipal.revalidate();
+				panelPrincipal.repaint();
+				labelUsuario.setText(con.getUser());
+				bottonDesconectar.setEnabled(true);
+			}
+
+		} catch (SQLException ex) {
+			Logger.getLogger(InterfazGrafica.class.getName()).log(Level.SEVERE, null, ex);
 		}
+		//}
     }//GEN-LAST:event_bottonConectarKeyPressed
 
 	/**

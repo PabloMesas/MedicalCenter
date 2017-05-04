@@ -6,7 +6,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
 public class Conexion {
 
@@ -15,20 +14,23 @@ public class Conexion {
 	private static String user = "";
 	private static String password = "";
 	private static final String url = "jdbc:mysql://localhost:3306/";
+	private static final String dbName = "centromedico";
 
-	public Conexion(String user, char[] cPassword) {
-		con = null;
-		
-		for (int i = 0 ; i < cPassword.length ; i++){
-			password += cPassword[i];
-		}
-		
+	public Conexion(String usuario, char[] cPassword) {
+		this.con = null;
+		this.user = usuario;
+		setPassword(cPassword);
+
 		try {
 			Class.forName(driver);
-			con = DriverManager.getConnection(url, user, password);
-			if (con != null) {
+			this.con = DriverManager.getConnection(url, user, password);
+
+			if (getCon() != null) {
 				System.out.println("Conexion establecida");
-				this.user = user;
+
+				if (getUser().equals("root") && !existeBD()) {
+					crearBD();
+				}
 			}
 		} catch (ClassNotFoundException | SQLException e) {
 			System.out.println("Error al conectar " + e);
@@ -36,34 +38,82 @@ public class Conexion {
 	}
 
 	public Connection getCon() {
-		return con;
+		return this.con;
 	}
 
 	public String getUser() {
-		return user;
+		return this.user;
 	}
 
-	public boolean esValida() throws SQLException{
-		return con.isValid(10);
-		
+	/**
+	 * Devuelve true si la conexion sigue siendo valida
+	 *
+	 * @return boolean
+	 * @throws SQLException
+	 */
+	public boolean esValida() throws SQLException {
+		return this.con.isValid(10);
 	}
+
+	/**
+	 * Cierra la conexion que se haya creado
+	 *
+	 * @throws SQLException
+	 */
 	public void desconectar() throws SQLException {
-		con.close();
-		con = null;
+		this.con.close();
 		if (con == null) {
 			System.out.println("Conexion terminada");
 		}
 	}
 
+	/**
+	 * Comprueba que existe la database "centromedico"
+	 *
+	 * @return boolean
+	 * @throws SQLException
+	 */
+	public boolean existeBD() throws SQLException {
+		boolean resul = false;
+		String nombre = "";
+		ResultSet rs;
+		rs = con.getMetaData().getCatalogs();
+
+		while (rs.next()) {
+			nombre = rs.getString(1);
+			if (dbName.equals(nombre)) {
+				resul = true;
+			}
+		}
+		return resul;
+	}
+
+	/**
+	 * Convierte la contraseña a un String lo guarda en el atributo password
+	 *
+	 * @param cPassword
+	 */
+	private void setPassword(char[] cPassword) {
+		this.password = "";
+		for (int i = 0; i < cPassword.length; i++) {
+			this.password += cPassword[i];
+		}
+	}
+
+	/**
+	 * Crea la base de datos
+	 *
+	 * @throws SQLException
+	 */
 	public void crearBD() throws SQLException {
 		PreparedStatement preparedStmt;
 		Connection reg = con;
 		System.out.println("Cargando los datos ");
-		String sql = "CREATE DATABASE IF NOT EXISTS CentroMedico;";
+		String sql = "CREATE DATABASE IF NOT EXISTS centromedico;";
 		preparedStmt = reg.prepareStatement(sql);
 		preparedStmt.execute(); //CREAR LA BD
 		System.out.print(".");
-		
+
 		String crearCitas = "CREATE TABLE IF NOT EXISTS centromedico.`citas` (\n"
 				+ "  `Cod_cita` varchar(20) NOT NULL,\n"
 				+ "  `Dia` date NOT NULL,\n"
@@ -140,7 +190,7 @@ public class Conexion {
 		preparedStmt.execute();
 		System.out.print(".");
 
-//1= mañana, 2= tarde, 3= mañana y tarde
+		//1= mañana, 2= tarde, 3= mañana y tarde
 		String iEspecialidades = "REPLACE INTO centromedico.`especialidad` (`Cod_especialidad`, `Nombre`, `Horario`) VALUES\n"
 				+ "(1, 'Cardiología',   '1,2,3,1,2,3,3'),\n"
 				+ "(2, 'Neurología',    '1,2,3,3,3,1,2'),\n"
@@ -209,11 +259,41 @@ public class Conexion {
 		}
 	}
 
-	private boolean existeUser(String nColegiado) throws SQLException {
+	/**
+	 * Devuelve true si existe el medico determinado por el String "nColegiado".
+	 * Sirve para crear los usuarios en la BD
+	 *
+	 * @param nColegiado
+	 * @return boolean
+	 * @throws SQLException
+	 */
+	public boolean existeUser(String nColegiado) throws SQLException {
 		PreparedStatement preparedStmt;
 		boolean resul = false;
 
 		String sql = "SELECT user from mysql.user where user = ?;";
+		preparedStmt = con.prepareStatement(sql);
+		preparedStmt.setString(1, nColegiado);
+		ResultSet rs = preparedStmt.executeQuery();
+		while (rs.next()) {
+			resul = true;
+		}
+		return resul;
+	}
+
+	/**
+	 * Busca en medico si existe el medico con nColegiado. Sirve para conectarse
+	 * como medico a la BD.
+	 *
+	 * @param nColegiado
+	 * @return boolean
+	 * @throws SQLException
+	 */
+	public boolean existeMedico(String nColegiado) throws SQLException {
+		PreparedStatement preparedStmt;
+		boolean resul = false;
+
+		String sql = "SELECT n_colegiado from centromedico.medico where n_colegiado = ?;";
 		preparedStmt = con.prepareStatement(sql);
 		preparedStmt.setString(1, nColegiado);
 		ResultSet rs = preparedStmt.executeQuery();
